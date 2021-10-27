@@ -1,3 +1,5 @@
 <launch>
-  <node pkg="rosbag" type="play" name="rosbag" args="/home/pazuzu/storage/rosbag/bags/outdoor/medium_loop_map_2021-10-22-19-55-29.bag odom:=odometry/wheel"/>
+  <arg name="bag_file" default=""/>
+  
+  <node pkg="rosbag" type="play" name="rosbag" args="$(arg bag_file) odom:=odometry/wheel"/>
 </launch>

@@ -1,6 +1,5 @@
 
 <launch>
-<!-- odom:=odometry/wheel -->
 <include file="$(find gps_utils_ros)/launch/modules/robot_state.launch"/>
 <include file="$(find gps_utils_ros)/launch/modules/ekf_odom.launch"/>
 <include file="$(find gps_utils_ros)/launch/modules/rosbag.launch"/>

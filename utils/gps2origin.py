@@ -1,3 +1,4 @@
+#! /usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """A module containing a simple class for transforming from WGS84 coordinate

@@ -1,7 +1,9 @@
 <launch>
+  <arg name="pcd_file" default=""/>
+
   <!-- that config for medium_loop_map.pcd -->
   <!-- 0) pub the map -->
-  <node pkg="pcl_ros" type="pcd_to_pointcloud" name="pcd_to_pointcloud" args="/home/pazuzu/storage/rosbag/bags/outdoor/medium_loop_map.pcd _frame_id:=map_rotated _latch:=true"/>
+  <node pkg="pcl_ros" type="pcd_to_pointcloud" name="pcd_to_pointcloud" args="$(arg pcd_file) _frame_id:=map_rotated _latch:=true"/>
   <!-- 1) if you need to rotate map, do it here by map->map_rotated tf-->
   <node pkg="tf" type="static_transform_publisher" name="map_transform" args="0 0 0 2.00 0 0 map map_rotated 100"  />
   
