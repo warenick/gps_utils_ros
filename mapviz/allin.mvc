@@ -1,0 +1,89 @@
+capture_directory: "~"
+fixed_frame: map
+target_frame: base_link
+fix_orientation: false
+rotate_90: false
+enable_antialiasing: true
+show_displays: true
+show_status_bar: true
+show_capture_tools: true
+window_width: 1856
+window_height: 1016
+view_scale: 0.1747888
+offset_x: 1.034794
+offset_y: -6.622682
+use_latest_transforms: true
+background: "#a0a0a4"
+displays:
+  - type: mapviz_plugins/tile_map
+    name: new display
+    config:
+      visible: true
+      collapsed: true
+      custom_sources:
+        []
+      bing_api_key: ""
+      source: Stamen (terrain)
+  - type: mapviz_plugins/navsat
+    name: new display
+    config:
+      visible: true
+      collapsed: true
+      topic: /android/fix
+      color: "#00ff00"
+      draw_style: points
+      position_tolerance: 0
+      buffer_size: 9999
+  - type: mapviz_plugins/navsat
+    name: new display
+    config:
+      visible: true
+      collapsed: true
+      topic: /mavros/global_position/raw/fix
+      color: "#3465a4"
+      draw_style: points
+      position_tolerance: 0
+      buffer_size: 99999
+  - type: mapviz_plugins/odometry
+    name: new display
+    config:
+      visible: true
+      collapsed: false
+      topic: /odom
+      color: "#ef2929"
+      draw_style: points
+      position_tolerance: 1
+      buffer_size: 99999
+      show_laps: false
+      show_covariance: false
+      show_all_covariances: false
+      static_arrow_sizes: false
+      arrow_size: 25
+      show_timestamps: 10
+  - type: mapviz_plugins/pointcloud2
+    name: new display
+    config:
+      visible: true
+      collapsed: false
+      topic: /velodyne_points
+      size: 1
+      buffer_size: 1
+      alpha: 1
+      color_transformer: z
+      min_color: "#ffffff"
+      max_color: "#000000"
+      value_min: 0
+      value_max: 100
+      use_rainbow: true
+      use_automaxmin: true
+      unpack_rgb: false
+  - type: mapviz_plugins/navsat
+    name: new display
+    config:
+      visible: true
+      collapsed: false
+      topic: /gps/filtered
+      color: "#75507b"
+      draw_style: points
+      position_tolerance: 0
+      buffer_size: 99999

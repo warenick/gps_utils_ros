@@ -1,0 +1,9 @@
+
+<launch>
+<include file="$(find gps_utils_ros)/launch/modules/robot_state.launch"/>
+<include file="$(find gps_utils_ros)/launch/modules/ekf_odom.launch"/>
+<include file="$(find gps_utils_ros)/launch/modules/rosbag.launch"/>
+<include file="$(find gps_utils_ros)/launch/modules/pcd_in_wsg84.launch"/>
+<include file="$(find gps_utils_ros)/launch/modules/mapviz.launch"/>
+<node pkg="gps_utils_ros" type="gps2origin.py" name="gps2origin"/>
+</launch>

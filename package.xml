@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>gps_utils_ros</name>
+  <maintainer email="todo@todo.todo">todo</maintainer>
+  <description>Ros localisation package</description>
+  <license>MIT</license>
+  <version>1.0.0</version>
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>rospy</exec_depend>
+
+  <exec_depend>move_base</exec_depend>
+</package>

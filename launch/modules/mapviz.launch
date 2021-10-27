@@ -1,0 +1,5 @@
+<launch>
+ 
+ <node pkg="mapviz" type="mapviz" name="mapviz" args="-d $(find gps_utils_ros)/mapviz/allin.mvc"></node>
+  
+</launch>

@@ -1,0 +1,19 @@
+ <launch>
+    
+      <node name="fix_translator_garmin" pkg="gps_common" type="fix_translator">
+      <remap from="navsat_fix_in"  to="/android/fix"/>
+      <remap from="gps_fix_out"    to="/android_gps_fix"/>
+      <param name="frame_id"       value="base_link"/>
+      <param name="child_frame_id" value="base_link"/>
+    </node> 
+
+    
+    <node name="fix_translator_ublox" pkg="gps_common" type="fix_translator">
+      <remap from="navsat_fix_in"  to="/mavros/global_position/raw/fix"/>
+      <remap from="gps_fix_out"    to="/ublox_m7n_gps_fix"/>
+      <param name="frame_id"       value="base_link"/>
+      <param name="child_frame_id" value="base_link"/>
+    </node> 
+   
+
+</launch>

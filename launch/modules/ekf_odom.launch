@@ -1,0 +1,4 @@
+<launch>
+  <rosparam command="load" file="$(find gps_utils_ros)/params/ekf_odom.yaml" />
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_odom" clear_params="true"/>
+</launch>

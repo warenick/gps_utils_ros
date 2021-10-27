@@ -1,0 +1,28 @@
+<launch>
+      <!-- MAVROS for connect to gps via pixhawk -->
+  <include file="$(find mavros)/launch/node.launch">
+                <arg name="pluginlists_yaml" value="$(find mavros)/launch/px4_pluginlists.yaml" />
+                <arg name="config_yaml"      value="$(find mavros)/launch/px4_config.yaml" />
+                <arg name="fcu_url"          value="/dev/serial/by-id/usb-3D_Robotics_PX4_FMU_v5.x_0-if00:57600" />
+                <arg name="gcs_url"          value="" />
+                <arg name="tgt_system"       value="1" />
+                <arg name="tgt_component"    value="1" />
+                <arg name="log_output"       value="screen" />
+  </include>
+
+  <node pkg="mapviz" type="mapviz" name="mapviz"></node>
+  <group ns="gps">
+    <!-- NavSat Serial -->
+    <node pkg="nmea_comms" type="serial_node" name="nmea_serial_node" > <!--output="screen"--> 
+      <param name="port"     value="/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AI05TQPF-if00-port0" /> <!-- for Garmin 18x GPS -->	  
+      <param name="baud"     value="9600" />
+      <param name="frame_id" value="GPS_link" />
+   </node>
+    <!-- Garmin nmea to NavSatFix-->
+    <node pkg="nmea_navsat_driver" type="nmea_topic_driver" name="nmea_topic_driver">
+      <remap from="/gps/fix"       to="/navsat/fix" />
+    </node> <!-- garmin -> /navsat/fix  -->
+
+    <!-- <include file="$(find gps_utils_ros)/launch/navsat2gps.launch"> </include> -->
+  </group>
+</launch>
