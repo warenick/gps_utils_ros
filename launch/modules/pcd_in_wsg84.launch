@@ -3,16 +3,16 @@
 
   <!-- that config for medium_loop_map.pcd -->
   <!-- 0) pub the map -->
-  <node pkg="pcl_ros" type="pcd_to_pointcloud" name="pcd_to_pointcloud" args="$(arg pcd_file) _frame_id:=map_rotated _latch:=true /cloud_pcd:=/points_map"/>
+  <node pkg="pcl_ros" type="pcd_to_pointcloud" name="pcd_to_pointcloud" args="$(arg pcd_file) _frame_id:=map _latch:=true /cloud_pcd:=/points_map"/>
   <!-- 1) if you need to rotate map, do it here by map->map_rotated tf-->
-  <node pkg="tf" type="static_transform_publisher" name="map_transform" args="0 0 0 2.00 0 0 map map_rotated 100"  />
+  <node pkg="tf" type="static_transform_publisher" name="map_transform" args="0 0 0 2.00 0 0 world map 100"  />
   
   <node pkg="swri_transform_util" type="initialize_origin.py" name="initialize_map_origin_in_wsg84" >
-    <param name="local_xy_frame" value="map"/>
-    <param name="local_xy_origin" value="map"/>
+    <param name="local_xy_frame" value="world"/>
+    <param name="local_xy_origin" value="world"/>
     <rosparam param="local_xy_origins">
     <!-- 2) put here coordinate of map in wsg84 coordinate system -->
-      [{ name: map,
+      [{ name: world,
          latitude: 55.738617,
          longitude: 37.524898,
          altitude: 160.,
