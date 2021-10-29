@@ -123,7 +123,7 @@ class GPS2ORIGIN(object):
             out_topic = gps_topic+"_local_xy"
         self.origin_sub = rospy.Subscriber(local_origin_topic, PoseStamped, self.origin_callback)
         self.gps_sub = rospy.Subscriber(gps_topic, NavSatFix, self.gps_callback)
-        self.gps_in_origin_pub = rospy.Publisher(out_topic, PoseStamped)
+        self.gps_in_origin_pub = rospy.Publisher(out_topic, PoseStamped, queue_size=2)
 
     def origin_callback(self, msg):
         self.origin = msg
