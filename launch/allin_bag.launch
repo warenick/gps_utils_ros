@@ -1,6 +1,7 @@
 
 <launch>
 <arg name="bag_file" default="/home/pazuzu/storage/rosbag/bags/outdoor/medium_loop_map_2021-10-22-19-55-29.bag"/>
+<!-- <arg name="bag_file" default="/home/pazuzu/storage/rosbag/bags/outdoor/road_from_park_2021-10-20-18-26-18.bag"/> -->
 <arg name="pcd_file" default="/home/pazuzu/storage/rosbag/bags/outdoor/medium_loop_map.pcd"/>
 
 <include file="$(find gps_utils_ros)/launch/modules/robot_state.launch"/>
@@ -8,10 +9,11 @@
     <arg name="bag_file" value="$(arg bag_file)" />
 </include>
 
-<include file="$(find gps_utils_ros)/launch/modules/ekf_odom.launch"/>
+<!-- <include file="$(find gps_utils_ros)/launch/modules/ekf_odom.launch"/> -->
 <include file="$(find gps_utils_ros)/launch/modules/pcd_in_wsg84.launch">
     <arg name="pcd_file" value="$(arg pcd_file)" />
 </include>
 <node pkg="gps_utils_ros" type="gps2origin.py" name="gps2origin"/>
 <include file="$(find gps_utils_ros)/launch/modules/mapviz.launch"/>
+<include file="$(find vedu_navigation)/launch/move_base_outdoor.launch"/> 
 </launch>
