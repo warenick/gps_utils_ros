@@ -1,0 +1,30 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/pazuzu/catkin_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/pazuzu/catkin_ws/src/geonav_transform/include/**",
+        "/home/pazuzu/catkin_ws/src/mapviz/mapviz/include/**",
+        "/home/pazuzu/catkin_ws/src/mapviz/mapviz_plugins/include/**",
+        "/home/pazuzu/catkin_ws/src/mapviz/multires_image/include/**",
+        "/home/pazuzu/catkin_ws/src/vedu_ros/realsense_gazebo_plugin/include/**",
+        "/home/pazuzu/catkin_ws/src/scout_ros/scout_base/include/**",
+        "/home/pazuzu/catkin_ws/src/serial/include/**",
+        "/home/pazuzu/catkin_ws/src/mapviz/tile_map/include/**",
+        "/home/pazuzu/catkin_ws/src/turtlebot3_simulations/turtlebot3_fake/include/**",
+        "/home/pazuzu/catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/include/**",
+        "/home/pazuzu/catkin_ws/src/ugv_sdk/include/**",
+        "/home/pazuzu/catkin_ws/src/um7/include/**",
+        "/home/pazuzu/catkin_ws/src/vedu_ros/velodyne_simulator/velodyne_gazebo_plugins/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}

@@ -1,6 +1,7 @@
 
 <launch>
 <arg name="pcd_file" default="/home/pazuzu/storage/rosbag/bags/outdoor/medium_loop_map.pcd"/>
+<!-- <arg name="pcd_file" default="/home/pazuzu/storage/rosbag/bags/outdoor/medium_loop_map_zero.pcd"/> -->
 <include file="$(find gps_utils_ros)/launch/modules/ekf_odom.launch"/>
 <include file="$(find gps_utils_ros)/launch/modules/pcd_in_wsg84.launch">
     <arg name="pcd_file" value="$(arg pcd_file)" />
