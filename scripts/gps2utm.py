@@ -52,16 +52,40 @@ class GPS2UTM(object):
         self.map_broadcaster.sendTransform(self.static_transformStamped)
 
     def gps_callback(self, msg):
+    #         [sensor_msgs/NavSatFix]:
+    # uint8 COVARIANCE_TYPE_UNKNOWN=0
+    # uint8 COVARIANCE_TYPE_APPROXIMATED=1
+    # uint8 COVARIANCE_TYPE_DIAGONAL_KNOWN=2
+    # uint8 COVARIANCE_TYPE_KNOWN=3
+    # std_msgs/Header header
+    #   uint32 seq
+    #   time stamp
+    #   string frame_id
+    # sensor_msgs/NavSatStatus status
+    #   int8 STATUS_NO_FIX=-1
+    #   int8 STATUS_FIX=0
+    #   int8 STATUS_SBAS_FIX=1
+    #   int8 STATUS_GBAS_FIX=2
+    #   uint16 SERVICE_GPS=1
+    #   uint16 SERVICE_GLONASS=2
+    #   uint16 SERVICE_COMPASS=4
+    #   uint16 SERVICE_GALILEO=8
+    #   int8 status
+    #   uint16 service
+    # float64 latitude
+    # float64 longitude
+    # float64 altitude
+    # float64[9] position_covariance
+    # uint8 position_covariance_type
+        
+        # Calculate position in map frame
         lat = msg.latitude
         lon = msg.longitude
         alt = msg.altitude
         alt = 0.
         North, East, _ = LLtoUTM(lat,lon) 
-        
-        # x,y = self.static_transformStamped
         utm_in_map_pose = PoseStamped()
         utm_in_map_pose.header.frame_id = self.utm_frame
-        # utm_in_map_pose.header.frame_id = self.map_frame
         utm_in_map_pose.header.stamp = rospy.Time.now()
         utm_in_map_pose.pose.position.x = East
         utm_in_map_pose.pose.position.y = North
@@ -71,8 +95,9 @@ class GPS2UTM(object):
         utm_in_map_pose.pose.orientation.z = 0.
         utm_in_map_pose.pose.orientation.w = 1.
         utm_in_map_pose = self.tf_listener.transformPose(self.map_frame, utm_in_map_pose)
-        
         self.utm_in_map_pub.publish(utm_in_map_pose)
+
+        # 
 
 if __name__=="__main__":
     
@@ -87,7 +112,7 @@ if __name__=="__main__":
          "altitude": 160.,
          "heading": 2.0})
     gps_topic = rospy.get_param('~gps_topic', "/mavros/global_position/raw/fix")
-    out_topic = rospy.get_param('~out_topic', "/utm_in_map")
+    out_topic = rospy.get_param('~out_topic', "/gps_in_map")
     rate = rospy.get_param('~rate', 30.)
     rate = 1/rate
     gps2utm = GPS2UTM(gps_topic, map_position, out_topic, utm_frame, map_frame)
