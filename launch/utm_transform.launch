@@ -26,6 +26,11 @@
           "from_frame":"wgs",
           "to":"/move_base_simple/goal",
           "to_frame":"map"},
+        
+        "frontend_goal_click_ros2":{"from":"/gps_goal",
+          "from_frame":"wgs",
+          "to":"/goal_pose",
+          "to_frame":"map"}
     }
     </rosparam>
     
