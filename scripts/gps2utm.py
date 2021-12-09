@@ -10,16 +10,50 @@ import geometry_msgs.msg
 from geonav_conversions import LLtoUTM
 class GPS2UTM(object):
     
-    def __init__(self,gps_topic, map_position, out_topic, utm_frame, map_frame):
-        if out_topic is None:
-            out_topic = gps_topic+"_in_map_utm"
+    def __init__(self,map_position, transform, utm_frame, map_frame):
         self.utm_frame = utm_frame 
         self.map_frame = map_frame
-        self.utm_in_map_pub = rospy.Publisher(out_topic, PoseStamped, queue_size=2)
-        self.gps_sub = rospy.Subscriber(gps_topic, NavSatFix, self.gps_callback)
+        # self.utm_in_map_pub = rospy.Publisher(out_topic, PoseStamped, queue_size=2)
+        # self.gps_sub = rospy.Subscriber(gps_topic, NavSatFix, self.gps_callback)
+        self.transform = transform
+        self.init_transforms(self.transform)
         self.init_map_transform(map_position)
         self.map_broadcaster = tf2_ros.StaticTransformBroadcaster()
         self.tf_listener = tf.TransformListener()
+
+    def init_transforms(self, transform):
+        for transf in transform:
+            pub_type = NavSatFix if "wgs" in transform[transf]["to_frame"] else PoseStamped
+            transform[transf]["publisher"] = rospy.Publisher(transform[transf]["to"], pub_type, queue_size=1)
+            sub_type = NavSatFix if "wgs" in transform[transf]["from_frame"] else PoseStamped
+            transform[transf]["subscriber"] = rospy.Subscriber(transform[transf]["from"], sub_type, self.transform_callback,(transform[transf]))
+            
+    def transform_callback(self, msg, info):
+        if "wgs" in info["from_frame"]:
+            transform_msg = self.wgs2frame(msg, info["to_frame"])
+        info["publisher"].publish(transform_msg)
+        
+
+        # Calculate wgs position in map frame
+    def wgs2frame(self, wgs_msg, frame_id):
+        lat = wgs_msg.latitude
+        lon = wgs_msg.longitude
+        alt = wgs_msg.altitude
+        alt = 0.
+        North, East, _ = LLtoUTM(lat,lon) 
+        in_frame_pose = PoseStamped()
+        in_frame_pose.header.frame_id = self.utm_frame
+        in_frame_pose.header.stamp = rospy.Time.now()
+        in_frame_pose.pose.position.x = East
+        in_frame_pose.pose.position.y = North
+        in_frame_pose.pose.position.z = alt
+        in_frame_pose.pose.orientation.x = 0.
+        in_frame_pose.pose.orientation.y = 0.
+        in_frame_pose.pose.orientation.z = 0.
+        in_frame_pose.pose.orientation.w = 1.
+        in_frame_pose = self.tf_listener.transformPose(frame_id, in_frame_pose)
+        return in_frame_pose
+
 
     def init_map_transform(self, map_position):
         self.static_transformStamped = geometry_msgs.msg.TransformStamped()       
@@ -111,11 +145,29 @@ if __name__=="__main__":
          "longitude": 37.524898,
          "altitude": 160.,
          "heading": 2.0})
-    gps_topic = rospy.get_param('~gps_topic', "/mavros/global_position/raw/fix")
-    out_topic = rospy.get_param('~out_topic', "/gps_in_map")
+
+    transform = rospy.get_param('~transform',
+      {  
+        "gps_mavros":{          "from":       "/mavros/global_position/raw/fix",
+                                "from_frame": "wgs",
+                                "to":         "/gps_in_map",
+                                "to_frame":   "map"},
+
+        "gps":{                 "from":       "/gps/fix",
+                                "from_frame": "wgs",
+                                "to":         "/gps/gps_in_map",
+                                "to_frame":   "map"},
+
+        "frontend_goal_click":{ "from":       "/frontend/goal_click",
+                                "from_frame": "wgs",
+                                "to":         "/move_base_simple/goal",
+                                "to_frame":   "map"},
+    })
+    # gps_topic = rospy.get_param('~gps_topic', "/mavros/global_position/raw/fix")
+    # out_topic = rospy.get_param('~out_topic', "/gps_in_map")
     rate = rospy.get_param('~rate', 30.)
     rate = 1/rate
-    gps2utm = GPS2UTM(gps_topic, map_position, out_topic, utm_frame, map_frame)
+    gps2utm = GPS2UTM(map_position, transform, utm_frame, map_frame)
     while not rospy.is_shutdown():
         gps2utm.static_tf_gps2map_pub()
         rospy.sleep(rate)
