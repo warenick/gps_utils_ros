@@ -22,7 +22,7 @@
           "to":"/gps/gps_in_map",
           "to_frame":"map"},
 
-        "frontend_goal_click":{"from":"/frontend/goal_click",
+        "frontend_goal_click":{"from":"/gps_goal",
           "from_frame":"wgs",
           "to":"/move_base_simple/goal",
           "to_frame":"map"},
