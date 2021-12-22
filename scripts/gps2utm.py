@@ -7,7 +7,7 @@ from sensor_msgs.msg import NavSatFix
 import tf
 import tf2_ros
 import geometry_msgs.msg
-from geonav_conversions import LLtoUTM
+from geonav_conversions import LLtoUTM, UTMtoLL
 class GPS2UTM(object):
     
     def __init__(self,map_position, transform, utm_frame, map_frame):
@@ -20,18 +20,43 @@ class GPS2UTM(object):
         self.init_map_transform(map_position)
         self.map_broadcaster = tf2_ros.StaticTransformBroadcaster()
         self.tf_listener = tf.TransformListener()
+        self.utm_zone = None
 
     def init_transforms(self, transform):
         for transf in transform:
-            pub_type = NavSatFix if "wgs" in transform[transf]["to_frame"] else PoseStamped
+            pub_type = NavSatFix if "wgs" in transform[transf]["to_frame"].lower() else PoseStamped
             transform[transf]["publisher"] = rospy.Publisher(transform[transf]["to"], pub_type, queue_size=1)
-            sub_type = NavSatFix if "wgs" in transform[transf]["from_frame"] else PoseStamped
-            transform[transf]["subscriber"] = rospy.Subscriber(transform[transf]["from"], sub_type, self.transform_callback,(transform[transf]))
+            sub_type = NavSatFix if "wgs" in transform[transf]["from_frame"].lower() else PoseStamped
+            transform[transf]["subscriber"] = rospy.Subscriber(transform[transf]["from"], sub_type, self.transform_callback, (transform[transf]))
             
     def transform_callback(self, msg, info):
         if "wgs" in info["from_frame"]:
-            transform_msg = self.wgs2frame(msg, info["to_frame"])
-        info["publisher"].publish(transform_msg)
+            transformed_msg = self.wgs2frame(msg, info["to_frame"])
+        else:
+            transformed_msg = self.frame2wgs(msg)
+        if transformed_msg is not None:
+            info["publisher"].publish(transformed_msg)
+        
+
+    def frame2wgs(self, msg):
+        if self.utm_zone is None:
+            return None
+        try:
+            in_world_msg = self.tf_listener.transformPose("world", msg)
+        except:
+            rospy.WARN("transform world to "+msg.header.frame_id + " not exist")
+            return None
+        lat = in_world_msg.pose.position.x
+        lon = in_world_msg.pose.position.y
+        (lat, lon) = UTMtoLL(lon, lat, self.utm_zone) # return (Lat, Long)
+        navsat_msg = NavSatFix()
+        navsat_msg.header = msg.header
+        navsat_msg.status.status = 0 # FIX
+        navsat_msg.status.service = 1 # GPS
+        navsat_msg.latitude = lat
+        navsat_msg.longitude = lon
+        navsat_msg.altitude = msg.pose.position.z
+        return navsat_msg
         
 
         # Calculate wgs position in map frame
@@ -40,7 +65,7 @@ class GPS2UTM(object):
         lon = wgs_msg.longitude
         alt = wgs_msg.altitude
         alt = 0.
-        North, East, _ = LLtoUTM(lat,lon) 
+        North, East, self.utm_zone = LLtoUTM(lat,lon) 
         in_frame_pose = PoseStamped()
         in_frame_pose.header.frame_id = self.utm_frame
         in_frame_pose.header.stamp = rospy.Time.now()
@@ -51,7 +76,10 @@ class GPS2UTM(object):
         in_frame_pose.pose.orientation.y = 0.
         in_frame_pose.pose.orientation.z = 0.
         in_frame_pose.pose.orientation.w = 1.
-        in_frame_pose = self.tf_listener.transformPose(frame_id, in_frame_pose)
+        try:
+            in_frame_pose = self.tf_listener.transformPose(frame_id, in_frame_pose)
+        except:
+            rospy.WARN("transform "+in_frame_pose.header.frame_id+" to "+frame_id + " not exist")
         return in_frame_pose
 
 
@@ -61,7 +89,7 @@ class GPS2UTM(object):
         self.static_transformStamped.header.frame_id = self.utm_frame
         self.static_transformStamped.child_frame_id = self.map_frame
         if "wsg" in map_position["type"]:
-            North, East, zone = LLtoUTM(map_position["latitude"], map_position["longitude"]) 
+            North, East, self.utm_zone = LLtoUTM(map_position["latitude"], map_position["longitude"]) 
             alt = map_position["altitude"]
             yaw = map_position["heading"]
         elif "utm" in map_position["type"]:
@@ -117,7 +145,7 @@ class GPS2UTM(object):
         lon = msg.longitude
         alt = msg.altitude
         alt = 0.
-        North, East, _ = LLtoUTM(lat,lon) 
+        North, East, self.utm_zone = LLtoUTM(lat,lon) 
         utm_in_map_pose = PoseStamped()
         utm_in_map_pose.header.frame_id = self.utm_frame
         utm_in_map_pose.header.stamp = rospy.Time.now()
@@ -162,6 +190,10 @@ if __name__=="__main__":
                                 "from_frame": "wgs",
                                 "to":         "/move_base_simple/goal",
                                 "to_frame":   "map"},
+        "localisation": { "from":       "/localization_pose",
+                                "from_frame": "map",
+                                "to":         "/gps/localization_pose",
+                                "to_frame":   "wgs"},
     })
     # gps_topic = rospy.get_param('~gps_topic', "/mavros/global_position/raw/fix")
     # out_topic = rospy.get_param('~out_topic', "/gps_in_map")
