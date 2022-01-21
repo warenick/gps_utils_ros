@@ -16,11 +16,11 @@ class GPS2UTM(object):
         # self.utm_in_map_pub = rospy.Publisher(out_topic, PoseStamped, queue_size=2)
         # self.gps_sub = rospy.Subscriber(gps_topic, NavSatFix, self.gps_callback)
         self.transform = transform
+        self.utm_zone = None
         self.init_transforms(self.transform)
         self.init_map_transform(map_position)
         self.map_broadcaster = tf2_ros.StaticTransformBroadcaster()
         self.tf_listener = tf.TransformListener()
-        self.utm_zone = None
 
     def init_transforms(self, transform):
         for transf in transform:
@@ -87,7 +87,7 @@ class GPS2UTM(object):
         lon = wgs_msg.longitude
         alt = wgs_msg.altitude
         alt = 0.
-        North, East, self.utm_zone = LLtoUTM(lat,lon) 
+        North, East, _ = LLtoUTM(lat,lon) 
         in_frame_pose = PoseStamped()
         in_frame_pose.header.frame_id = self.utm_frame
         in_frame_pose.header.stamp = rospy.Time.now()
@@ -131,6 +131,7 @@ class GPS2UTM(object):
         self.static_transformStamped.transform.rotation.z = quat[2]
         self.static_transformStamped.transform.rotation.w = quat[3]       
         rospy.loginfo("inited map wgs conversions")
+
     
     def static_tf_gps2map_pub(self):
         self.static_transformStamped.header.stamp = rospy.Time.now()
@@ -168,7 +169,7 @@ class GPS2UTM(object):
         lon = msg.longitude
         alt = msg.altitude
         alt = 0.
-        North, East, self.utm_zone = LLtoUTM(lat,lon) 
+        North, East, _ = LLtoUTM(lat,lon) 
         utm_in_map_pose = PoseStamped()
         utm_in_map_pose.header.frame_id = self.utm_frame
         utm_in_map_pose.header.stamp = rospy.Time.now()
