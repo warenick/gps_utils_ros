@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import rospy
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, PoseArray
 from sensor_msgs.msg import NavSatFix
 import tf
 import tf2_ros
@@ -24,27 +24,33 @@ class GPS2UTM(object):
 
     def init_transforms(self, transform):
         for transf in transform:
-            pub_type = NavSatFix if "wgs" in transform[transf]["to_frame"].lower() else PoseStamped
+            
+            strtype = transform[transf]["to_msg_type"]
+            pub_type = NavSatFix if ("NavSatFix" in strtype) else PoseStamped if ("PoseStamped" in strtype) else PoseArray if ("PoseArray" in strtype) else None
             transform[transf]["publisher"] = rospy.Publisher(transform[transf]["to"], pub_type, queue_size=1)
-            sub_type = NavSatFix if "wgs" in transform[transf]["from_frame"].lower() else PoseStamped
+            
+            strtype = transform[transf]["from_msg_type"]
+            sub_type = NavSatFix if ("NavSatFix" in strtype) else PoseStamped if ("PoseStamped" in strtype) else PoseArray if ("PoseArray" in strtype) else None
             transform[transf]["subscriber"] = rospy.Subscriber(transform[transf]["from"], sub_type, self.transform_callback, (transform[transf]))
             
     def transform_callback(self, msg, info):
-        if "wgs" in info["from_frame"]:
+        # if "wgs" in info["from_frame"]:
+        if "NavSatFix" in info["from_msg_type"] and "PoseStamped" in info["to_msg_type"]:
             transformed_msg = self.wgs2frame(msg, info["to_frame"])
-        else:
+        elif "PoseStamped" in info["from_msg_type"] and "NavSatFix" in info["to_msg_type"]:
             transformed_msg = self.frame2wgs(msg)
+        elif "PoseArray" in info["from_msg_type"] and "PoseArray" in info["to_msg_type"] and "wgs" in info["from_frame"]:
+            transformed_msg = self.arr_wgs2frame(msg, info["to_frame"])
         if transformed_msg is not None:
             info["publisher"].publish(transformed_msg)
         
-
     def frame2wgs(self, msg):
         if self.utm_zone is None:
             return None
         try:
             in_world_msg = self.tf_listener.transformPose("world", msg)
         except:
-            rospy.WARN("transform world to "+msg.header.frame_id + " not exist")
+            rospy.logwarn("transform world to "+msg.header.frame_id + " not exist")
             return None
         lat = in_world_msg.pose.position.x
         lon = in_world_msg.pose.position.y
@@ -57,6 +63,22 @@ class GPS2UTM(object):
         navsat_msg.longitude = lon
         navsat_msg.altitude = msg.pose.position.z
         return navsat_msg
+        
+    def arr_wgs2frame(self, msg, frame_id):
+            if self.utm_zone is None:
+                rospy.logwarn("utm zone is not exist. wgs convertion is not initialized")
+                return None
+            posearr_msg = PoseArray()
+            posearr_msg.header = msg.header
+            posearr_msg.header.frame_id = frame_id
+            for pose in msg.poses:
+                wgs_msg = NavSatFix()
+                wgs_msg.latitude = pose.position.x
+                wgs_msg.longitude = pose.position.y
+                # wgs_msg.header = pose.position.z
+                pose_msg = self.wgs2frame(wgs_msg, frame_id)
+                posearr_msg.poses.append(pose_msg.pose)
+            return posearr_msg
         
 
         # Calculate wgs position in map frame
@@ -79,7 +101,7 @@ class GPS2UTM(object):
         try:
             in_frame_pose = self.tf_listener.transformPose(frame_id, in_frame_pose)
         except:
-            rospy.WARN("transform "+in_frame_pose.header.frame_id+" to "+frame_id + " not exist")
+            rospy.logwarn("transform "+in_frame_pose.header.frame_id+" to "+frame_id + " not exist")
         return in_frame_pose
 
 
@@ -108,6 +130,7 @@ class GPS2UTM(object):
         self.static_transformStamped.transform.rotation.y = quat[1]
         self.static_transformStamped.transform.rotation.z = quat[2]
         self.static_transformStamped.transform.rotation.w = quat[3]       
+        rospy.loginfo("inited map wgs conversions")
     
     def static_tf_gps2map_pub(self):
         self.static_transformStamped.header.stamp = rospy.Time.now()
@@ -169,10 +192,10 @@ if __name__=="__main__":
     map_frame = rospy.get_param('~map_frame', "map")
     map_position = rospy.get_param('~map_position', { 
          "type": "wsg", # "wsg" or "utm"
-         "latitude": 55.738617,
-         "longitude": 37.524898,
+         "latitude": 55.738585,
+         "longitude": 37.52480,
          "altitude": 160.,
-         "heading": 2.0})
+         "heading": 1.684})
 
     transform = rospy.get_param('~transform',
       {  
@@ -194,6 +217,12 @@ if __name__=="__main__":
                                 "from_frame": "map",
                                 "to":         "/gps/localization_pose",
                                 "to_frame":   "wgs"},
+        "waypoints_wgs":{"from":"/waypoints_wgs",
+                                "from_frame":           "wgs",
+                                "to":                   "/waypoints",
+                                "to_frame":             "map"},
+
+
     })
     # gps_topic = rospy.get_param('~gps_topic', "/mavros/global_position/raw/fix")
     # out_topic = rospy.get_param('~out_topic', "/gps_in_map")

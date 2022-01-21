@@ -1,44 +1,73 @@
 <launch>
- <!-- "wsg" or "utm" -->
- <!--[lat,lon,alt,yaw]-->
-<!-- 2) put here coordinate of map in wsg84 or utm coordinate system -->
+  <!-- "wsg" or "utm" -->
+  <!--[lat,lon,alt,yaw]-->
+  <!-- 2) put here coordinate of map in wsg84 or utm coordinate system -->
   <node pkg="gps_utils_ros" type="gps2utm.py" name="gps2utm" clear_params="true" output="screen">
     <rosparam param="map_position">
       {  "type": "wsg",
-         "latitude": 55.738617,
-         "longitude": 37.524898,
+         "latitude": 55.738585,
+         "longitude": 37.52480,
          "altitude": 160.,
-         "heading": 2.0}
+         "heading": 1.684}
     </rosparam>
     <rosparam param="transform">
       {  
-        "gps_mavros":{"from":"/mavros/global_position/raw/fix",
-          "from_frame":"wgs",
-          "to":"/gps_in_map",
-          "to_frame":"map"},
+        "gps_mavros":{"from":     "/mavros/global_position/raw/fix",
+          "from_frame":           "wgs",
+          "to":                   "/gps_in_map",
+          "to_frame":             "map",
+          "from_msg_type":        "NavSatFix",
+          "to_msg_type":          "PoseStamped"},
 
-        "gps":{"from":"/gps/fix",
-          "from_frame":"wgs",
-          "to":"/gps/gps_in_map",
-          "to_frame":"map"},
+        "loc2gps":{"from":        "/localization_pose",
+          "from_frame":           "map",
+          "to":                   "/localization_pose_wgs",
+          "to_frame":             "wgs",
+          "from_msg_type":        "PoseStamped",
+          "to_msg_type":          "PoseStamped"},
 
-        "frontend_goal_click":{"from":"/gps_goal",
-          "from_frame":"wgs",
-          "to":"/move_base_simple/goal",
-          "to_frame":"map"},
+        "waypoints_wgs":{"from":  "/waypoints_wgs",
+          "from_frame":           "wgs",
+          "to":                   "/waypoints",
+          "to_frame":             "map",
+          "from_msg_type":        "PoseArray",
+          "to_msg_type":          "PoseArray"},
+
+        "gps":{"from":            "/gps/fix",
+          "from_frame":           "wgs",
+          "to":                   "/gps/gps_in_map",
+          "to_frame":             "map",
+          "from_msg_type":        "NavSatFix",
+          "to_msg_type":          "PoseStamped"},
+
+        "front_goal_clk":{"from": "/gps_goal",
+          "from_frame":           "wgs",
+          "to":                   "/move_base_simple/goal",
+          "to_frame":             "map",
+          "from_msg_type":        "NavSatFix",
+          "to_msg_type":          "PoseStamped"},
         
-        "frontend_goal_click_ros2":{"from":"/gps_goal",
-          "from_frame":"wgs",
-          "to":"/goal_pose",
-          "to_frame":"map"}
+        "front_goal_clk2":{"from":"/gps_goal",
+          "from_frame":           "wgs",
+          "to":                   "/goal_pose",
+          "to_frame":             "map",
+          "from_msg_type":        "NavSatFix",
+          "to_msg_type":          "PoseStamped"},
+
+        "localisation": { "from": "/localization_pose",
+          "from_frame":           "map",
+          "to":                   "/gps/localization_pose",
+          "to_frame":             "wgs",
+          "from_msg_type":        "PoseStamped",
+          "to_msg_type":          "NavSatFix"},
     }
     </rosparam>
-    
+
     <param name="utm_frame" value="world" />
-    <param name="map_frame" value="map" /> 
+    <param name="map_frame" value="map" />
     <!-- <param name="gps_topic" value="/mavros/global_position/raw/fix" /> 
     <param name="out_topic" value="/gps_in_map" />  -->
-    <param name="rate" value="30." /> 
+    <param name="rate" value="30." />
   </node>
 
 </launch>

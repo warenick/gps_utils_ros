@@ -1,13 +1,15 @@
 <launch>
-  <arg name="bag_file" default="/home/pazuzu/storage/rosbag/bags/outdoor/medium_loop_map_2021-10-22-19-55-29.bag"/>
+  <!-- <arg name="bag_file" default="/home/pazuzu/storage/rosbag/bags/outdoor/medium_loop_map_2021-10-22-19-55-29.bag"/> -->
   <!-- <arg name="bag_file" default="/home/pazuzu/storage/rosbag/bags/outdoor/road_from_park_2021-10-20-18-26-18.bag"/> -->
-  <arg name="pcd_file" default="/home/pazuzu/storage/rosbag/bags/outdoor/medium_loop_map_zero.pcd"/>
+  <!-- <arg name="pcd_file" default="/home/pazuzu/storage/rosbag/bags/outdoor/medium_loop_map_zero.pcd"/> -->
   <!-- <arg name="pcd_file" default="/home/pazuzu/storage/rosbag/bags/outdoor/medium_loop_map.pcd"/> -->
+  <arg name="pcd_file" default="/home/pazuzu/storage/maps/park_full/pointcloudmap.pcd"/>
 
+  
     <include file="$(find gps_utils_ros)/launch/modules/robot_state.launch"/>
-    <include file="$(find gps_utils_ros)/launch/modules/rosbag.launch">
+    <!-- <include file="$(find gps_utils_ros)/launch/modules/rosbag.launch">
         <arg name="bag_file" value="$(arg bag_file)" />
-    </include>
+    </include> -->
   <node pkg="pcl_ros" type="pcd_to_pointcloud" name="pcd_to_pointcloud" args="$(arg pcd_file) _frame_id:=map _latch:=true /cloud_pcd:=/points_map"/>
 
 
