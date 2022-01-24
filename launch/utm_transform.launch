@@ -28,7 +28,7 @@
 
         "waypoints_wgs":{"from":  "/waypoints_wgs",
           "from_frame":           "wgs",
-          "to":                   "/waypoints",
+          "to":                   "/waypoints_map",
           "to_frame":             "map",
           "from_msg_type":        "PoseArray",
           "to_msg_type":          "PoseArray"},
